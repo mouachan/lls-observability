@@ -52,6 +52,19 @@ spec:
         {{- with .Values.collector.config.exporters.debug }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+      {{- if .Values.collector.config.exporters.otlp }}
+      otlp/dev:
+        endpoint: {{ .Values.collector.config.exporters.otlp.dev.endpoint | default (printf "tempo-tempostack-distributor.%s.svc.cluster.local:4317" .Values.global.namespace) }}
+        {{- if .Values.collector.config.exporters.otlp.dev.tls }}
+        tls:
+          {{- toYaml .Values.collector.config.exporters.otlp.dev.tls | nindent 10 }}
+        {{- end }}
+        {{- if .Values.collector.config.exporters.otlp.dev.headers }}
+        headers:
+          {{- toYaml .Values.collector.config.exporters.otlp.dev.headers | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.collector.config.exporters.otlphttp }}
       otlphttp/dev:
         endpoint: {{ include "otel-collector.tempoGatewayEndpoint" . }}
         headers:
@@ -63,6 +76,7 @@ spec:
         auth:
           authenticator: bearertokenauth
         {{- end }}
+      {{- end }}
 
     receivers:
       prometheus:
@@ -94,10 +108,6 @@ spec:
         {{- end }}
       pipelines:
         {{- with .Values.collector.config.service.pipelines }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-      telemetry:
-        {{- with .Values.collector.config.service.telemetry }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
 {{- end }}

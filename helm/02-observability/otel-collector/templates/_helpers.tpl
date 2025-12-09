@@ -140,10 +140,18 @@ app.kubernetes.io/part-of: observability
 
 {{/*
 Generate the Tempo gateway endpoint URL
+Note: For OTLP HTTP exporter, we need to remove /v1/traces from the path
+since the exporter adds it automatically
 */}}
 {{- define "otel-collector.tempoGatewayEndpoint" -}}
 {{- with .Values.tempo.gateway }}
-{{- printf "%s://%s.%s.svc.cluster.local:%s%s" .protocol .endpoint .namespace .port .path }}
+{{- $basePath := .path | default "" }}
+{{- $path := $basePath | replace "/v1/traces" "" }}
+{{- if $path }}
+{{- printf "%s://%s.%s.svc.cluster.local:%d%s" .protocol .endpoint .namespace (int .port) $path }}
+{{- else }}
+{{- printf "%s://%s.%s.svc.cluster.local:%d" .protocol .endpoint .namespace (int .port) }}
+{{- end }}
 {{- end }}
 {{- end }}
 

@@ -24,21 +24,21 @@ spec:
         - name: OTEL_METRIC_ENDPOINT
           value: http://otel-collector-collector.observability-hub.svc.cluster.local:4318/v1/metrics
         - name: INFERENCE_MODEL
-          value: llama3-2-3b
+          value: {{ .Values.llamaStackDistribution.inferenceModel | default "llama3-2-3b" | quote }}
         - name: SAFETY_MODEL
-          value: meta-llama/Llama-Guard-3-1B
+          value: {{ .Values.llamaStackDistribution.safetyModel | default "meta-llama/Llama-Guard-3-1B" | quote }}
         - name: VLLM_MAX_TOKENS
-          value: "60000"
+          value: {{ .Values.llamaStackDistribution.vllmMaxTokens | default "60000" | quote }}
         - name: VLLM_URL
-          value: "http://llama3-2-3b-predictor:8080/v1"
+          value: {{ .Values.llamaStackDistribution.vllmUrl | default "http://llama3-2-3b-predictor:8080/v1" | quote }}
         - name: SAFETY_URL
-          value: "http://llama-guard-3-1b-predictor:8080/v1"
+          value: {{ .Values.llamaStackDistribution.safetyUrl | default "http://llama-guard-3-1b-predictor:8080/v1" | quote }}
         - name: VLLM_API_TOKEN
-          value: "fake"
+          value: {{ .Values.llamaStackDistribution.vllmApiToken | default "fake" | quote }}
         - name: VLLM_TLS_VERIFY
-          value: "false"
+          value: {{ .Values.llamaStackDistribution.vllmTlsVerify | default "false" | quote }}
         - name: VLLM_SAFETY_MAX_TOKENS
-          value: "20000"
+          value: {{ .Values.llamaStackDistribution.vllmSafetyMaxTokens | default "20000" | quote }}
         - name: MILVUS_DB_PATH
           value: "~/.llama/distributions/remote-vllm/milvus_store.db"
         - name: SQLITE_STORE_DIR
@@ -60,6 +60,20 @@ spec:
       {{- if .Values.llamaStackDistribution.server.distribution.image }}
       image: {{ .Values.llamaStackDistribution.server.distribution.image }}
       {{- end }}
+    {{- if or .Values.llamaStackDistribution.server.podOverrides.serviceAccountName .Values.llamaStackDistribution.server.podOverrides.volumeMounts .Values.llamaStackDistribution.server.podOverrides.volumes }}
+    podOverrides:
+      {{- if .Values.llamaStackDistribution.server.podOverrides.serviceAccountName }}
+      serviceAccountName: {{ .Values.llamaStackDistribution.server.podOverrides.serviceAccountName }}
+      {{- end }}
+      {{- if .Values.llamaStackDistribution.server.podOverrides.volumeMounts }}
+      volumeMounts:
+        {{- toYaml .Values.llamaStackDistribution.server.podOverrides.volumeMounts | nindent 8 }}
+      {{- end }}
+      {{- if .Values.llamaStackDistribution.server.podOverrides.volumes }}
+      volumes:
+        {{- toYaml .Values.llamaStackDistribution.server.podOverrides.volumes | nindent 8 }}
+      {{- end }}
+    {{- end }}
     userConfig:
       configMapName: llama-stack-config
 {{- end }}

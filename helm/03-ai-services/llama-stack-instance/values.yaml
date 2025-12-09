@@ -22,6 +22,18 @@ llamaStackDistribution:
   # Number of replicas for the distribution
   replicas: 1
   
+  # Model configuration
+  inferenceModel: "llama3-2-3b"
+  safetyModel: "meta-llama/Llama-Guard-3-1B"
+  
+  # vLLM configuration
+  vllmUrl: "http://llama3-2-3b-predictor:8080/v1"
+  safetyUrl: "http://llama-guard-3-1b-predictor:8080/v1"
+  vllmMaxTokens: "60000"
+  vllmSafetyMaxTokens: "20000"
+  vllmApiToken: "fake"
+  vllmTlsVerify: "false"
+  
   # Server configuration
   server:
     # Container specification
@@ -184,3 +196,9 @@ otelCollector:
   # Ingress configuration
   ingress:
     route: {}
+
+# Mutating Webhook configuration to fix security context issue
+mutatingWebhook:
+  enabled: false
+  # Note: This requires a webhook server to be deployed
+  # For now, we'll use a simpler approach with annotations
